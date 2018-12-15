@@ -1,5 +1,6 @@
 package com.apporiented.algorithm.clustering;
 
+import com.apporiented.algorithm.clustering.MDS.MDSAlgorithm;
 import com.apporiented.algorithm.clustering.clustering.Cluster;
 import com.apporiented.algorithm.clustering.clustering.ClusteringAlgorithm;
 import com.apporiented.algorithm.clustering.clustering.CompleteLinkageStrategy;
@@ -8,12 +9,17 @@ import com.apporiented.algorithm.clustering.similarity.Corpus;
 import com.apporiented.algorithm.clustering.similarity.Document;
 import com.apporiented.algorithm.clustering.similarity.Similarity;
 import com.apporiented.algorithm.clustering.visualization.DendrogramPanel;
+import org.knowm.xchart.SwingWrapper;
+import org.knowm.xchart.XYChart;
+import org.knowm.xchart.XYChartBuilder;
+import smile.clustering.KMeans;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
 
 public class Main {
-    private static String PATH = "C:\\Users\\admin\\Desktop\\clustering\\fisiere\\";
+    private static String PATH = "C:\\Users\\admin\\Desktop\\Master\\clustering\\fisiere\\";
 
     private static double[] calculateSimilarities(Corpus corpus, String file) {
 
@@ -57,30 +63,56 @@ public class Main {
         double[][] similarities = new double[files.length][];
 
         for (int i = 0; i < files.length; i++) {
-            similarities[i] =  calculateSimilarities(corpus, files[i]);
+            similarities[i] = calculateSimilarities(corpus, files[i]);
         }
 
         System.out.println("Similaritatile dintre fisiere");
         printStrings(files);
-        printMatrix(files,similarities);
+        printMatrix(files, similarities);
 
 
         System.out.println();
         System.out.println("Distantele dintre fisiere");
         //Convert it to dinstances aproach
-        for(int i =0; i < similarities.length; i++){
-            for(int j = 0; j < similarities.length; j++){
-                similarities[i][j] = round(1 - similarities[i][j],2);
+        for (int i = 0; i < similarities.length; i++) {
+            for (int j = 0; j < similarities.length; j++) {
+                similarities[i][j] = round(1 - similarities[i][j], 2);
             }
         }
         printStrings(files);
-        printMatrix(files,similarities);
+        printMatrix(files, similarities);
+        //dendogram(similarities, files);
 
+        double test[][] = /*{ { 0,1}, { -2,-3}};*/{{0, 93, 82, 133},
+                {93, 0, 52, 60},
+                {82, 52, 0, 111},
+                {133, 60, 111, 0}};
+        double[][] points = MDSAlgorithm.run(similarities);
+        drawDistancesPlot(points, files);
 
-        dendogram(similarities, files);
+        kmeansMethod(points);
     }
 
-    public static void dendogram(double[][] similarities, String[] filenames){
+    private static void drawDistancesPlot(double[][] points, String[] files) {
+        XYChart chart = new XYChartBuilder()
+                .width(600).height(500)
+                .title("Gaussian Blobs")
+                .xAxisTitle("X")
+                .yAxisTitle("Y")
+                .build();
+        for(int i = 0; i< points.length; i++){
+            chart.addSeries(files[i], Arrays.asList(points[i][0]), Arrays.asList(points[i][1]));
+        }
+        JFrame jFrame = new SwingWrapper(chart).displayChart();
+    }
+
+    private static void kmeansMethod(double[][] points) {
+        KMeans kMeans = new KMeans(points,2,10,1);
+        kMeans.distortion();
+        int[] clusterLabel = kMeans.getClusterLabel();
+    }
+
+    public static void dendogram(double[][] similarities, String[] filenames) {
         JFrame frame = new JFrame();
         frame.setSize(400, 300);
         frame.setLocation(400, 300);
@@ -129,7 +161,7 @@ public class Main {
         System.out.println(finalString);
     }
 
-    private  static double round(double value, int places) {
+    private static double round(double value, int places) {
         if (places < 0) throw new IllegalArgumentException();
 
         long factor = (long) Math.pow(10, places);
@@ -138,7 +170,7 @@ public class Main {
         return (double) tmp / factor;
     }
 
-    private static void printMatrix(String[] files,  double[][] matrix) {
+    private static void printMatrix(String[] files, double[][] matrix) {
         StringBuilder finalRow;
 
         for (int i = 0; i < files.length; i++) {
