@@ -21,6 +21,11 @@ import java.util.Collection;
 public class WeightedLinkageStrategy implements LinkageStrategy {
 
     @Override
+    public String getStrategyTitle() {
+        return "Weighted Linkage Strategy";
+    }
+
+    @Override
     public Distance calculateDistance(Collection<Distance> distances) {
         double sum = 0;
         double weightTotal = 0;

@@ -21,6 +21,11 @@ import java.util.Collection;
 public class AverageLinkageStrategy implements LinkageStrategy {
 
 	@Override
+	public String getStrategyTitle() {
+		return "Average Linkage Strategy";
+	}
+
+	@Override
 	public Distance calculateDistance(Collection<Distance> distances) {
 		double sum = 0;
 		double result;

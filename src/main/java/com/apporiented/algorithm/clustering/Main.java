@@ -1,10 +1,7 @@
 package com.apporiented.algorithm.clustering;
 
 import com.apporiented.algorithm.clustering.MDS.MDSAlgorithm;
-import com.apporiented.algorithm.clustering.clustering.Cluster;
-import com.apporiented.algorithm.clustering.clustering.ClusteringAlgorithm;
-import com.apporiented.algorithm.clustering.clustering.CompleteLinkageStrategy;
-import com.apporiented.algorithm.clustering.clustering.DefaultClusteringAlgorithm;
+import com.apporiented.algorithm.clustering.clustering.*;
 import com.apporiented.algorithm.clustering.similarity.Corpus;
 import com.apporiented.algorithm.clustering.similarity.Document;
 import com.apporiented.algorithm.clustering.similarity.Similarity;
@@ -20,36 +17,6 @@ import java.util.Arrays;
 
 public class Main {
     private static String PATH = "C:\\Users\\admin\\Desktop\\Master\\clustering\\fisiere\\";
-
-    private static double[] calculateSimilarities(Corpus corpus, String file) {
-
-        //Create similarity object witch needs corpus
-        Similarity similarity = new Similarity(corpus, new Document(PATH, file));
-
-        //1. Check Word Matrix
-       /* corpus.saveWordsFromDocsInFile();
-
-        //2. Analyze results
-        similarity.getIDF();
-
-        similarity.getFrequency();
-        similarity.getFrequencyOfQuery();
-
-
-        similarity.getTF();
-        similarity.getTfOfQuery();
-
-        similarity.getTFIDF();
-        similarity.getTFIDFOfQuery();
-
-        similarity.getLenghts();
-
-        similarity.getSimilarityVector();
-        similarity.getCosSimilarityVector();*/
-
-        double[] cosSimilarityVector = similarity.getCosSimilarityVector();
-        return cosSimilarityVector;
-    }
 
     public static void main(String[] args) {
 
@@ -67,29 +34,30 @@ public class Main {
         }
 
         System.out.println("Similaritatile dintre fisiere");
-        printStrings(files);
-        printMatrix(files, similarities);
-
+        Utils.printStrings(files);
+        Utils.printMatrix(files, similarities);
 
         System.out.println();
         System.out.println("Distantele dintre fisiere");
         //Convert it to dinstances aproach
         for (int i = 0; i < similarities.length; i++) {
             for (int j = 0; j < similarities.length; j++) {
-                similarities[i][j] = round(1 - similarities[i][j], 2);
+                similarities[i][j] = Utils.round(1 - similarities[i][j], 2);
             }
         }
-        printStrings(files);
-        printMatrix(files, similarities);
-        //dendogram(similarities, files);
+        Utils.printStrings(files);
+        Utils.printMatrix(files, similarities);
 
-        double test[][] = /*{ { 0,1}, { -2,-3}};*/{{0, 93, 82, 133},
-                {93, 0, 52, 60},
-                {82, 52, 0, 111},
-                {133, 60, 111, 0}};
+        //Hierarchical Agglomerative Clustering
+        dendogram(similarities, files, new CompleteLinkageStrategy());
+        dendogram(similarities, files, new SingleLinkageStrategy());
+        dendogram(similarities, files, new AverageLinkageStrategy());
+
+       //Convert distance matrix to coordinates matrix
         double[][] points = MDSAlgorithm.run(similarities);
         drawDistancesPlot(points, files);
 
+        //K-Meants Clustering
         kmeansMethod(points);
     }
 
@@ -104,15 +72,17 @@ public class Main {
             chart.addSeries(files[i], Arrays.asList(points[i][0]), Arrays.asList(points[i][1]));
         }
         JFrame jFrame = new SwingWrapper(chart).displayChart();
+        jFrame.setTitle("Coordinates Matrix");
     }
 
     private static void kmeansMethod(double[][] points) {
+        //Smile library ? still confusing about it
         KMeans kMeans = new KMeans(points,2,10,1);
         kMeans.distortion();
         int[] clusterLabel = kMeans.getClusterLabel();
     }
 
-    public static void dendogram(double[][] similarities, String[] filenames) {
+    public static void dendogram(double[][] similarities, String[] filenames, LinkageStrategy linkageStrategy) {
         JFrame frame = new JFrame();
         frame.setSize(400, 300);
         frame.setLocation(400, 300);
@@ -122,6 +92,7 @@ public class Main {
         DendrogramPanel dp = new DendrogramPanel();
 
         frame.setContentPane(content);
+        frame.setTitle(linkageStrategy.getStrategyTitle());
         content.setBackground(Color.red);
         content.setLayout(new BorderLayout());
         content.add(dp, BorderLayout.CENTER);
@@ -133,54 +104,20 @@ public class Main {
 
         ClusteringAlgorithm alg = new DefaultClusteringAlgorithm();
         //You can chnage the strategy
-        Cluster cluster = alg.performClustering(similarities, filenames, new CompleteLinkageStrategy());
+        Cluster cluster = alg.performClustering(similarities, filenames, linkageStrategy);
         cluster.toConsole(0);
 
         dp.setModel(cluster);
         frame.setVisible(true);
     }
 
+    private static double[] calculateSimilarities(Corpus corpus, String file) {
+        //Create similarity object witch needs corpus
+        Similarity similarity = new Similarity(corpus, new Document(PATH, file));
 
-    static public void printVector(String title, int header, double[] vector) {
-        StringBuilder finalRow = new StringBuilder();
-        finalRow.append(String.format("%15s", ""));
-
-        for (double num : vector) {
-            finalRow.append(String.format("%15f", num));
-        }
-        System.out.println(finalRow);
+        double[] cosSimilarityVector = similarity.getCosSimilarityVector();
+        return cosSimilarityVector;
     }
 
-    private static void printStrings(String[] stringList) {
-        StringBuilder finalString = new StringBuilder();
-        finalString.append(String.format("%25s", ""));
-        for (String str : stringList) {
-            str = String.format("%25s", str);
-            finalString.append(str);
-        }
-        System.out.println(finalString);
-    }
-
-    private static double round(double value, int places) {
-        if (places < 0) throw new IllegalArgumentException();
-
-        long factor = (long) Math.pow(10, places);
-        value = value * factor;
-        long tmp = Math.round(value);
-        return (double) tmp / factor;
-    }
-
-    private static void printMatrix(String[] files, double[][] matrix) {
-        StringBuilder finalRow;
-
-        for (int i = 0; i < files.length; i++) {
-            finalRow = new StringBuilder();
-            finalRow.append(String.format("%25s", files[i]));
-            for (int j = 0; j < matrix[i].length; j++) {
-                finalRow.append(String.format("%25.2f", matrix[i][j]));
-            }
-            System.out.println(finalRow);
-        }
-    }
 
 }

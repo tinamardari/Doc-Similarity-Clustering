@@ -20,5 +20,6 @@ import java.util.Collection;
 
 public interface LinkageStrategy {
 
+	public String getStrategyTitle();
 	public Distance calculateDistance(Collection<Distance> distances);
 }

@@ -21,6 +21,11 @@ import java.util.Collection;
 public class SingleLinkageStrategy implements LinkageStrategy {
 
 	@Override
+	public String getStrategyTitle() {
+		return "Single Linkage Strategy";
+	}
+
+	@Override
 	public Distance calculateDistance(Collection<Distance> distances) {
 		double min = Double.NaN;
 

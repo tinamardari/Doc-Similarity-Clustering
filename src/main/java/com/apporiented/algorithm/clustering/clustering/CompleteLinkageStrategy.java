@@ -21,6 +21,11 @@ import java.util.Collection;
 public class CompleteLinkageStrategy implements LinkageStrategy {
 
 	@Override
+	public String getStrategyTitle() {
+		return "Complete Linkage Strategy";
+	}
+
+	@Override
 	public Distance calculateDistance(Collection<Distance> distances) {
 		double max = Double.NaN;
 
