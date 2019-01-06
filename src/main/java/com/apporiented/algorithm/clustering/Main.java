@@ -2,6 +2,8 @@ package com.apporiented.algorithm.clustering;
 
 import com.apporiented.algorithm.clustering.MDS.MDSAlgorithm;
 import com.apporiented.algorithm.clustering.clustering.*;
+import com.apporiented.algorithm.clustering.kmeans.KMeansCluster;
+import com.apporiented.algorithm.clustering.kmeans.KMeansClustering;
 import com.apporiented.algorithm.clustering.similarity.Corpus;
 import com.apporiented.algorithm.clustering.similarity.Document;
 import com.apporiented.algorithm.clustering.similarity.Similarity;
@@ -9,11 +11,13 @@ import com.apporiented.algorithm.clustering.visualization.DendrogramPanel;
 import org.knowm.xchart.SwingWrapper;
 import org.knowm.xchart.XYChart;
 import org.knowm.xchart.XYChartBuilder;
+import org.knowm.xchart.XYSeries;
 import smile.clustering.KMeans;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
+import java.util.List;
 
 public class Main {
     private static String PATH = "C:\\Users\\admin\\Desktop\\Master\\clustering\\fisiere\\";
@@ -21,7 +25,7 @@ public class Main {
     public static void main(String[] args) {
 
         //Declare documents
-        String[] files = new String[]{"test1.txt", "test2.txt", "test3.txt", "test4.txt"};
+        String[] files = new String[]{"test1.txt", "test2.txt", "test3.txt", "test4.txt", "test5.txt"};
 
         //Create corpus
         Corpus corpus = new Corpus(PATH, files, true);
@@ -49,22 +53,66 @@ public class Main {
         Utils.printMatrix(files, similarities);
 
         //Hierarchical Agglomerative Clustering
-        dendogram(similarities, files, new CompleteLinkageStrategy());
-        dendogram(similarities, files, new SingleLinkageStrategy());
-        dendogram(similarities, files, new AverageLinkageStrategy());
+        hierarchicalClustering(similarities, files);
 
        //Convert distance matrix to coordinates matrix
         double[][] points = MDSAlgorithm.run(similarities);
-        drawDistancesPlot(points, files);
+        //drawPointsPlot(points, files);
 
         //K-Meants Clustering
-        kmeansMethod(points);
+        kmeansClustering(points,2);
     }
 
-    private static void drawDistancesPlot(double[][] points, String[] files) {
+    private static double[] calculateSimilarities(Corpus corpus, String file) {
+        //Create similarity object witch needs corpus
+        Similarity similarity = new Similarity(corpus, new Document(PATH, file));
+
+        double[] cosSimilarityVector = similarity.getCosSimilarityVector();
+        return cosSimilarityVector;
+    }
+
+    private static void hierarchicalClustering(double[][] similarities, String[] files) {
+        drawDendogram(similarities, files, new CompleteLinkageStrategy());
+        drawDendogram(similarities, files, new SingleLinkageStrategy());
+        drawDendogram(similarities, files, new AverageLinkageStrategy());
+    }
+
+    private static void kmeansClustering(double[][] points, int k) {
+        KMeans kMeans = new KMeans(points,k);
+        List<KMeansCluster> clusters = KMeansClustering.run(points, kMeans.centroids());
+        drawKmeansClusters(clusters, k);
+    }
+
+    public static void drawKmeansClusters(List<KMeansCluster> clusters, int k){
+        int a = 0;
         XYChart chart = new XYChartBuilder()
                 .width(600).height(500)
-                .title("Gaussian Blobs")
+                .title("Kmeans Clustering k = " + k)
+                .xAxisTitle("X")
+                .yAxisTitle("Y")
+                .build();
+        chart.getStyler().setDefaultSeriesRenderStyle(XYSeries.XYSeriesRenderStyle.Scatter);
+
+        for(KMeansCluster cluster: clusters){
+            double[][] clusterPointsCoords = cluster.getClusterPointsCoords();
+            double[] coordXs = new double[clusterPointsCoords.length];
+            double[] coordYs = new double[clusterPointsCoords.length];
+
+            for(int i =0; i < clusterPointsCoords.length; i++){
+                coordXs[i] = clusterPointsCoords[i][0];
+                coordYs[i] = clusterPointsCoords[i][1];
+            }
+            chart.addSeries("Cluster #"+ a++, coordXs, coordYs);
+        }
+
+        JFrame jFrame = new SwingWrapper(chart).displayChart();
+        jFrame.setTitle("Coordinates Matrix");
+    }
+
+    private static void drawPointsPlot(double[][] points, String[] files) {
+        XYChart chart = new XYChartBuilder()
+                .width(600).height(500)
+                .title("Coordinates")
                 .xAxisTitle("X")
                 .yAxisTitle("Y")
                 .build();
@@ -75,14 +123,7 @@ public class Main {
         jFrame.setTitle("Coordinates Matrix");
     }
 
-    private static void kmeansMethod(double[][] points) {
-        //Smile library ? still confusing about it
-        KMeans kMeans = new KMeans(points,2,10,1);
-        kMeans.distortion();
-        int[] clusterLabel = kMeans.getClusterLabel();
-    }
-
-    public static void dendogram(double[][] similarities, String[] filenames, LinkageStrategy linkageStrategy) {
+    public static void drawDendogram(double[][] similarities, String[] filenames, LinkageStrategy linkageStrategy) {
         JFrame frame = new JFrame();
         frame.setSize(400, 300);
         frame.setLocation(400, 300);
@@ -109,14 +150,6 @@ public class Main {
 
         dp.setModel(cluster);
         frame.setVisible(true);
-    }
-
-    private static double[] calculateSimilarities(Corpus corpus, String file) {
-        //Create similarity object witch needs corpus
-        Similarity similarity = new Similarity(corpus, new Document(PATH, file));
-
-        double[] cosSimilarityVector = similarity.getCosSimilarityVector();
-        return cosSimilarityVector;
     }
 
 

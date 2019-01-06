@@ -14,14 +14,16 @@ public class MDSAlgorithm {
 
     public static double[][] run(double[][] initial) {
         int N = initial.length;
-        double helper[][] = /*{ { 0,1}, { -2,-3}};*/
-                {{0.25, 0.25, 0.25, 0.25},
-                        {0.25, 0.25, 0.25, 0.25},
-                        {0.25, 0.25, 0.25, 0.25},
-                        {0.25, 0.25, 0.25, 0.25}};
+
+        double helper[][] = new double[N][N];
+        for(int i=0; i < N; i++){
+            for(int j=0; j < N; j++){
+                helper[i][j] = 0.25;
+            }
+        }
 
         Matrix P = Matrix.constructWithCopy(MathUtils.powMatrix(initial));
-        Matrix J = Matrix.identity(4, 4).minus(Matrix.constructWithCopy(helper));
+        Matrix J = Matrix.identity(N, N).minus(Matrix.constructWithCopy(helper));
         Matrix B = J.times(-0.5).times(P).times(J);
         //Matrix A = new Matrix(B.getArrayCopy());
         //A = A.transpose().times(A);
@@ -42,7 +44,7 @@ public class MDSAlgorithm {
         System.out.print("V =");
         V.print(0, 4);
 
-        first2LargestEigenVectors(e);
+        first2LargestEigenVectors(e, N);
 
         System.out.print("eigenVectors =");
         eigenVectors.print(0, 4);
@@ -62,10 +64,10 @@ public class MDSAlgorithm {
         return  X.getArrayCopy();
     }
 
-    private static void first2LargestEigenVectors(EigenvalueDecomposition eig) {
+    private static void first2LargestEigenVectors(EigenvalueDecomposition eig, int n) {
         eigenValues = Matrix.identity(2, 2);
         eigenValuesSqrt = Matrix.identity(2, 2);
-        eigenVectors = Matrix.random(4, 2);
+        eigenVectors = Matrix.random(n, 2);
 
         double[] largestEigenValues = first2LargestEigenValuesPos(eig.getRealEigenvalues().clone()).get(0);
         double[] largestEigenValuesPos = first2LargestEigenValuesPos(eig.getRealEigenvalues().clone()).get(1);

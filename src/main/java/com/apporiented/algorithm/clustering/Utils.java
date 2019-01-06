@@ -43,4 +43,17 @@ public class Utils {
         }
     }
 
+    public static void printMatrix(String title, double[][] matrix) {
+        StringBuilder finalRow;
+        System.out.println(title);
+
+        for (int i = 0; i < matrix.length; i++) {
+            finalRow = new StringBuilder();
+            for (int j = 0; j < matrix[i].length; j++) {
+                finalRow.append(String.format("%25.2f", matrix[i][j]));
+            }
+            System.out.println(finalRow);
+        }
+    }
+
 }
