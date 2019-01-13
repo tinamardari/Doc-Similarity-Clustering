@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.apporiented.algorithm.clustering.ClusteringForm">
-  <grid id="27dc6" binding="panelMain" layout-manager="GridLayoutManager" row-count="3" column-count="7" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+  <grid id="27dc6" binding="panelMain" layout-manager="GridLayoutManager" row-count="6" column-count="7" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="10" left="10" bottom="10" right="10"/>
     <constraints>
       <xy x="20" y="20" width="594" height="541"/>
@@ -24,20 +24,12 @@
           <text value="Selected files are:"/>
         </properties>
       </component>
-      <component id="c8858" class="javax.swing.JLabel" binding="selectedFilesLabel">
-        <constraints>
-          <grid row="1" column="1" row-span="1" col-span="4" vsize-policy="0" hsize-policy="0" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value=""/>
-        </properties>
-      </component>
       <component id="8d121" class="javax.swing.JButton" binding="doneButton">
         <constraints>
-          <grid row="0" column="4" row-span="1" col-span="3" vsize-policy="0" hsize-policy="3" anchor="1" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="0" column="2" row-span="1" col-span="5" vsize-policy="0" hsize-policy="3" anchor="1" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="DONE"/>
+          <text value="Done"/>
         </properties>
       </component>
       <component id="4426f" class="javax.swing.JButton" binding="chooseFilesButton">
@@ -51,7 +43,7 @@
       <grid id="809de" binding="hierarhicalPanel" layout-manager="GridLayoutManager" row-count="3" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="10" left="10" bottom="10" right="10"/>
         <constraints>
-          <grid row="2" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <grid row="5" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
         <border type="line"/>
@@ -120,7 +112,7 @@
       <grid id="d76f2" binding="kmeansPanel" layout-manager="GridLayoutManager" row-count="3" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="10" left="10" bottom="10" right="10"/>
         <constraints>
-          <grid row="2" column="2" row-span="1" col-span="5" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <grid row="5" column="2" row-span="1" col-span="5" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
         <border type="line"/>
@@ -171,6 +163,62 @@
           </component>
         </children>
       </grid>
+      <component id="36dd5" class="javax.swing.JButton" binding="similarityMatrixButton" default-binding="true">
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Show Similarity Matrix"/>
+        </properties>
+      </component>
+      <scrollpane id="56e57" binding="scrollablePane">
+        <constraints>
+          <grid row="3" column="0" row-span="1" col-span="7" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="none" title="Similarity matrix"/>
+        <children>
+          <component id="f099e" class="javax.swing.JTextArea" binding="textArea1" default-binding="true">
+            <constraints/>
+            <properties/>
+          </component>
+        </children>
+      </scrollpane>
+      <component id="d0f83" class="javax.swing.JLabel">
+        <constraints>
+          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value=""/>
+        </properties>
+      </component>
+      <component id="126e6" class="javax.swing.JButton" binding="plotButton" default-binding="true">
+        <constraints>
+          <grid row="2" column="2" row-span="1" col-span="5" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Show Plot"/>
+        </properties>
+      </component>
+      <scrollpane id="b594e" binding="selectedFilesScrollPanel">
+        <constraints>
+          <grid row="1" column="1" row-span="1" col-span="6" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false">
+            <minimum-size width="-1" height="40"/>
+            <preferred-size width="-1" height="40"/>
+            <maximum-size width="-1" height="40"/>
+          </grid>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="6e6a2" class="javax.swing.JLabel" binding="selectedFilesLabel">
+            <constraints/>
+            <properties>
+              <text value=""/>
+            </properties>
+          </component>
+        </children>
+      </scrollpane>
     </children>
   </grid>
 </form>

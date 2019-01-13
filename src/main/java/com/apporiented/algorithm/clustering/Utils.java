@@ -11,7 +11,7 @@ public class Utils {
         System.out.println(finalRow);
     }
 
-    public static void printStrings(String[] stringList) {
+    public static StringBuilder printStrings(String[] stringList) {
         StringBuilder finalString = new StringBuilder();
         finalString.append(String.format("%25s", ""));
         for (String str : stringList) {
@@ -19,6 +19,7 @@ public class Utils {
             finalString.append(str);
         }
         System.out.println(finalString);
+        return finalString.append(String.format("%25s", "")+"\n");
     }
 
     public static double round(double value, int places) {
@@ -30,7 +31,8 @@ public class Utils {
         return (double) tmp / factor;
     }
 
-    public static void printMatrix(String[] files, double[][] matrix) {
+    public static StringBuilder printMatrix(String[] files, double[][] matrix) {
+        StringBuilder finalMatrix = new StringBuilder();
         StringBuilder finalRow;
 
         for (int i = 0; i < files.length; i++) {
@@ -40,7 +42,9 @@ public class Utils {
                 finalRow.append(String.format("%25.2f", matrix[i][j]));
             }
             System.out.println(finalRow);
+            finalMatrix.append(finalRow).append("\n");
         }
+        return finalMatrix;
     }
 
     public static void printMatrix(String title, double[][] matrix) {

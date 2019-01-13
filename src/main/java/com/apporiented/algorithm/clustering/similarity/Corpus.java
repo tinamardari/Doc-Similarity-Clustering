@@ -12,6 +12,7 @@ public class Corpus {
     private List<String> allWords = new ArrayList<>();
     private boolean forceRefresh;
     int[][] freqMatrix;
+    String corpusStats;
 
     public Corpus(String path, String[] fileNames, boolean forceRefresh) {
         this.path = path;
@@ -19,8 +20,12 @@ public class Corpus {
         initDocuments(fileNames);
 
         createFreqMatrix();
-        printStats();
+        corpusStats = printStats();
         saveFreqMatrix();
+    }
+
+    public String getCorpusStats() {
+        return corpusStats;
     }
 
     private void createFreqMatrix() {
@@ -114,12 +119,17 @@ public class Corpus {
         return documents;
     }
 
-    private void printStats() {
-        System.out.println("CORPUS INFO");
-        System.out.println("\t------------------------------------");
-        System.out.println("\tTotal Documents: " + documents.size());
-        System.out.println("\tTotal Distinct Words: " + allWords.size());
-        System.out.println("\t------------------------------------");
+    private String printStats() {
+        StringBuilder stats = new StringBuilder();
+        stats.append("CORPUS INFO"+"\n")
+                .append("\t------------------------------------\n")
+                .append("\tTotal Documents: " + documents.size()+"\n")
+                .append("\tTotal Distinct Words: " + allWords.size()+"\n")
+                .append("\t------------------------------------"+"\n");
+
+
+        System.out.println(stats);
+        return stats.toString();
     }
 
     public int[][] getFreqMatrix() {

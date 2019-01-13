@@ -13,6 +13,7 @@ import org.knowm.xchart.SwingWrapper;
 import org.knowm.xchart.XYChart;
 import org.knowm.xchart.XYChartBuilder;
 import org.knowm.xchart.XYSeries;
+import org.knowm.xchart.style.markers.SeriesMarkers;
 import smile.clustering.KMeans;
 
 import javax.swing.*;
@@ -36,10 +37,17 @@ public class ClusteringForm extends JFrame {
     private JPanel kmeansPanel;
     private JTextField kValueEditText;
     private JButton kmeansButton;
+    private JButton plotButton;
+    private JButton similarityMatrixButton;
+    private JTextArea textArea1;
+    private JScrollPane scrollablePane;
+    private JScrollPane selectedFilesScrollPanel;
 
     public String[] fileNames;
     public String path;
     double[][] similarities;
+    double[][] points;
+    boolean shouldHideMatrix = false;
 
     public ClusteringForm() {
         setupFrame();
@@ -48,6 +56,19 @@ public class ClusteringForm extends JFrame {
         doneButton.addActionListener(e -> onDoneClicked());
         hierarhicalClusteringButton.addActionListener(e -> onHierarhicalClicked());
         kmeansButton.addActionListener(e -> onKmeansClicked());
+        plotButton.addActionListener(e -> drawPointsPlot(points, fileNames));
+        similarityMatrixButton.addActionListener(e -> {
+            onSimilarityStateChanged();
+        });
+    }
+
+    private void onSimilarityStateChanged() {
+        scrollablePane.setVisible(!shouldHideMatrix);
+        revalidate();
+        shouldHideMatrix = !shouldHideMatrix;
+        similarityMatrixButton.setText(shouldHideMatrix ? "Hide Similarity Matrix" : "Show Similarity Matrix");
+        setPreferredSize(new Dimension(500, shouldHideMatrix ? 500 : 350));
+        pack();
     }
 
     private void onChooseFileClicked() {
@@ -65,26 +86,28 @@ public class ClusteringForm extends JFrame {
 
         if (files.length >= 2){
             selectedFilesTitle.setVisible(true);
-            selectedFilesLabel.setVisible(true);
+            selectedFilesScrollPanel.setVisible(true);
             doneButton.setEnabled(true);
+            revalidate();
             pack();
 
         } else{
             hierarhicalPanel.setVisible(false);
             kmeansPanel.setVisible(false);
+            plotButton.setVisible(false);
+            similarityMatrixButton.setVisible(false);
+            //textArea1.setVisible(false);
+            scrollablePane.setVisible(false);
             pack();
         }
     }
 
     private void onKmeansClicked() {
         int kValue = Integer.parseInt(kValueEditText.getText());
-        if (kValue < 2){
-            JOptionPane.showMessageDialog(ClusteringForm.this, "You should select  k >= 2");
+        if (kValue < 2 || kValue > fileNames.length){
+            JOptionPane.showMessageDialog(ClusteringForm.this, "You should select  k >= 2 and k <= "+fileNames.length);
             return;
         }
-        //Convert distance matrix to coordinates matrix
-        double[][] points = MDSAlgorithm.run(similarities);
-        //drawPointsPlot(points, files);
 
         //K-Meants Clustering
         kmeansClustering(points,kValue);
@@ -92,25 +115,31 @@ public class ClusteringForm extends JFrame {
 
     private void onHierarhicalClicked() {
         if (singleLinkageStrategyCheckBox.isSelected()){
-            drawDendogram(similarities, fileNames, new SingleLinkageStrategy());
+            drawDendogram(similarities, fileNames, new SingleLinkageStrategy(),0);
         }
         if (completedLinkageStrategyCheckBox.isSelected()){
-            drawDendogram(similarities, fileNames, new CompleteLinkageStrategy());
+            drawDendogram(similarities, fileNames, new CompleteLinkageStrategy(),1);
         }
         if (averageLinkageStrategyCheckBox.isSelected()){
-            drawDendogram(similarities, fileNames, new AverageLinkageStrategy());
+            drawDendogram(similarities, fileNames, new AverageLinkageStrategy(),2);
         }
     }
 
     private void onDoneClicked() {
         //Declare documents
         //String[] files = new String[]{"test1.txt", "test2.txt", "test3.txt", "test4.txt", "test5.txt"};
+        setPreferredSize(new Dimension(500, 350));
+        pack();
+
         if(fileNames == null || fileNames.length < 2){
             JOptionPane.showMessageDialog(ClusteringForm.this, "You should select at least 2 files");
             return;
         }
         hierarhicalPanel.setVisible(true);
         kmeansPanel.setVisible(true);
+        plotButton.setVisible(true);
+        similarityMatrixButton.setVisible(true);
+
 
         //Create corpus
         Corpus corpus = new Corpus(path, fileNames, true);
@@ -123,8 +152,8 @@ public class ClusteringForm extends JFrame {
         }
 
         System.out.println("Similaritatile dintre fisiere");
-        Utils.printStrings(fileNames);
-        Utils.printMatrix(fileNames, similarities);
+        StringBuilder filesHeader = Utils.printStrings(fileNames);
+        StringBuilder similaritiesTextMatrix = Utils.printMatrix(fileNames, similarities);
 
         System.out.println();
         System.out.println("Distantele dintre fisiere");
@@ -135,22 +164,31 @@ public class ClusteringForm extends JFrame {
             }
         }
         Utils.printStrings(fileNames);
-        Utils.printMatrix(fileNames, similarities);
+        StringBuilder distancesTextMatrix = Utils.printMatrix(fileNames, similarities);
+
+        textArea1.setText(String.valueOf(
+                corpus.getCorpusStats() + "\nSimilarities\n" + filesHeader + similaritiesTextMatrix + "\n\nDistances\n"+filesHeader + distancesTextMatrix));
+
+        //Convert distance matrix to coordinates matrix
+        points = MDSAlgorithm.run(similarities);
     }
 
     private void setupFrame() {
+        setTitle("Documents Clustering");
         setContentPane(panelMain);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setPreferredSize(new Dimension(500, 300));
-        setLocation(300,300);
+        setPreferredSize(new Dimension(500, 120));
+        setLocation(50,50);
 
         selectedFilesTitle.setVisible(false);
-        selectedFilesLabel.setVisible(false);
+        selectedFilesScrollPanel.setVisible(false);
         hierarhicalPanel.setVisible(false);
+        plotButton.setVisible(false);
         kmeansPanel.setVisible(false);
+        similarityMatrixButton.setVisible(false);
+        //textArea1.setVisible(false);
+        scrollablePane.setVisible(false);
         pack();
-        setLocationRelativeTo(null);
-
     }
 
     private double[] calculateSimilarities(Corpus corpus, String file) {
@@ -159,12 +197,6 @@ public class ClusteringForm extends JFrame {
 
         double[] cosSimilarityVector = similarity.getCosSimilarityVector();
         return cosSimilarityVector;
-    }
-
-    private void hierarchicalClustering(double[][] similarities, String[] files) {
-        drawDendogram(similarities, files, new CompleteLinkageStrategy());
-        drawDendogram(similarities, files, new SingleLinkageStrategy());
-        drawDendogram(similarities, files, new AverageLinkageStrategy());
     }
 
     private void kmeansClustering(double[][] points, int k) {
@@ -176,7 +208,7 @@ public class ClusteringForm extends JFrame {
     public void drawKmeansClusters(List<KMeansCluster> clusters, int k){
         int a = 0;
         XYChart chart = new XYChartBuilder()
-                .width(600).height(500)
+                .width(500).height(400)
                 .title("Kmeans Clustering k = " + k)
                 .xAxisTitle("X")
                 .yAxisTitle("Y")
@@ -198,6 +230,7 @@ public class ClusteringForm extends JFrame {
         Thread t = new Thread(() -> {
             JFrame jFrame = new SwingWrapper(chart).displayChart();
             jFrame.setTitle("KMeans Clustering");
+            jFrame.setLocation(600,50);
             jFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         });
@@ -207,7 +240,7 @@ public class ClusteringForm extends JFrame {
 
     private void drawPointsPlot(double[][] points, String[] files) {
         XYChart chart = new XYChartBuilder()
-                .width(600).height(500)
+                .width(500).height(400)
                 .title("Coordinates")
                 .xAxisTitle("X")
                 .yAxisTitle("Y")
@@ -220,16 +253,18 @@ public class ClusteringForm extends JFrame {
             public void run() {
                 JFrame jFrame = new SwingWrapper(chart).displayChart();
                 jFrame.setTitle("Coordinates Matrix");
+                jFrame.setLocation(600,50);
+                jFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
             }
 
         });
         t.start();
     }
 
-    public void drawDendogram(double[][] similarities, String[] filenames, LinkageStrategy linkageStrategy) {
+    public void drawDendogram(double[][] similarities, String[] filenames, LinkageStrategy linkageStrategy, int position) {
         JFrame frame = new JFrame();
         frame.setSize(400, 300);
-        frame.setLocation(400, 300);
+        frame.setLocation(50 + 400*position, 400);
 
         JPanel content = new JPanel();
         DendrogramPanel dp = new DendrogramPanel();
