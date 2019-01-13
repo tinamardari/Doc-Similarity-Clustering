@@ -1,1 +1,0 @@
-Kotlin is a programming language
